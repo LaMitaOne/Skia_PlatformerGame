@@ -20,9 +20,9 @@ Sample Video: https://www.youtube.com/watch?v=3ZmmeK92jpQ
 No game engine, no external renderer – **pure Skia canvas** + hand-written physics.   
     
 ### Controls   
-- **A / Left Arrow** → Move left     
-- **D / Right Arrow** → Move right     
-- **Space / Up Arrow** → Jump     
+- **Left Arrow** → Move left     
+- **Right Arrow** → Move right     
+- **Up Arrow** → Jump     
    
 For now: **Proof of concept** – built from scratch in 2 hours.    
 
