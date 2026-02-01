@@ -13,7 +13,7 @@ Sample Video: https://www.youtube.com/watch?v=3ZmmeK92jpQ
 ### What's inside    
 - Stickman character with real physics (gravity, jumping, friction, acceleration)     
 - Jumping on blocks (basic collision detection)    
-- Left/right movement + jump with keyboard (A/D or Left/Right arrows + Space/Up)    
+- Left/right movement + jump with keyboard (Left/Right arrows + Space/Up)    
 - Nice gradient sky background + rounded, shadowed blocks with glow     
 - Animated avatar (slight sway & breathing bounce when jumping, directional facing)     
     
