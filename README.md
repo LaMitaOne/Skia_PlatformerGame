@@ -7,6 +7,8 @@ RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, col
 # SkiaPlatformer – 2-Hour Skia Platformer Prototype 😝   
    
 A simple 2D platformer prototype built entirely with **Skia** (FMX + Skia4Delphi)    
+
+Sample Video: https://www.youtube.com/watch?v=3ZmmeK92jpQ           
    
 ### What's inside    
 - Stickman character with real physics (gravity, jumping, friction, acceleration)     
