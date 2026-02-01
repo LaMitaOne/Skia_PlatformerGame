@@ -4,9 +4,10 @@ RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, col
   <img width="1601" height="579" alt="Unbenannt" src="https://github.com/user-attachments/assets/0bf5ec14-8de6-4f43-88a0-24cadf0b3990" />
     
     
-# SkiaPlatformer – 2-Hour Skia Platformer Prototype 😝   
+# Skia Platformer Prototype 😝   
    
 A simple 2D platformer prototype built entirely with **Skia** (FMX + Skia4Delphi)    
+Just a quick idea i had to try in 2 hours :D and yea works    
 
 Sample Video: https://www.youtube.com/watch?v=3ZmmeK92jpQ           
    
