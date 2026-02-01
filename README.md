@@ -23,8 +23,9 @@ No game engine, no external renderer – **pure Skia canvas** + hand-written phy
 - **Space / Up Arrow** → Jump     
    
 For now: **Proof of concept** – built from scratch in 2 hours.    
-        
-   
+
+Sample project and exe(zipped) included   
+    
 License: MIT (do whatever you want with it)   
    
-Happy jumping! 🦘     
+Happy jumping! 🦘    
