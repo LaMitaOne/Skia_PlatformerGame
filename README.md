@@ -18,7 +18,10 @@ Sample Video: https://www.youtube.com/watch?v=3ZmmeK92jpQ
 - Nice gradient sky background + rounded, shadowed blocks with glow     
 - Animated avatar (slight sway & breathing bounce when jumping, directional facing)     
     
-No game engine, no external renderer – **pure Skia canvas** + hand-written physics.   
+No game engine. No external renderer.    
+Just **pure Skia canvas** and hand-written physics.    
+     
+This project is a minimal but robust "skeleton" for a 2D platformer. It provides everything you need to get started—gravity, friction, collisions, and particle effects—without the complexity of a massive engine. It’s the perfect starting point to see exactly how the mechanics work under the hood. All in just a few hundred lines.          
     
 ### Controls   
 - **Left Arrow** → Move left     
