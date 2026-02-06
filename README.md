@@ -4,7 +4,9 @@ RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, col
   <img width="1601" height="579" alt="Unbenannt" src="https://github.com/user-attachments/assets/0bf5ec14-8de6-4f43-88a0-24cadf0b3990" />
     
     
-# Skia Platformer Prototype 😝   
+# Skia Platformer Prototype 
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LaMitaOne/Skia_PlatformerGame)
    
 A simple 2D platformer prototype built entirely with **Skia** (FMX + Skia4Delphi)    
 Just a quick idea i had to try in 2 hours :D and yea works    
