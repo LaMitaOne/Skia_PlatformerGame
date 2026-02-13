@@ -14,7 +14,7 @@ SkiaPlatformer Preview
 
 This isn't just a static tech demo anymore. It's a vertical slice of a platformer engine:
 
-    Procedural Generation: Every level is randomly generated. It ensures gaps are jumpable, platforms are reachable, and high "Sky Islands" reward exploration.
+    Procedural Generation: Every level is randomly generated. It ensures gaps are jumpable, platforms are "mostly" reachable, and high "Sky Islands" reward exploration.
     Stargate Levels: Find the portal at the end of the map to teleport to the next level.
     Dynamic Worlds: The background changes based on the level (Day, Night, Sunset, Alien World). Trees and clouds adjust their colors to match the sky.
     Enemies: Encounter "Ghosts" that patrol platforms. Touch them, and it's game over! But watch out—they can fall into pits just like you.
