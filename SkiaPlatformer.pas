@@ -21,12 +21,6 @@
   - Particle System: Dynamic visual effects (Explosions, Dust, Fireflies).
 *******************************************************************************}
 
-
-{ Skia-Platformer v0.2 Release                                                 }
-{ by Lara Miriam Tamy Reschke                                                  }
-{                                                                              }
-{------------------------------------------------------------------------------}
-
 {
  ----Latest Changes
    v 0.2:
@@ -1395,4 +1389,5 @@ begin
   inherited;
 end;
 end.
+
 
