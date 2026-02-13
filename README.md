@@ -3,6 +3,7 @@ RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, col
    
 <img width="1612" height="589" alt="Unbenannt" src="https://github.com/user-attachments/assets/94f889b3-6ce9-49b8-8354-4bb5916a4f6f" />
 
+Sample Video: https://www.youtube.com/watch?v=mePkXrbPfJg    
     
 # Skia Platformer Game v0.2 alpha
 
