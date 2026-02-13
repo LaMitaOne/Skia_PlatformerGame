@@ -5,7 +5,7 @@
   Designed for smooth animations, particle effects, and responsive physics.
 
   Author:  Lara Miriam Tamy Reschke
-  Version: 1.0 Release
+  Version: 0.2 Alpha
   License: MIT
 
   Key Features:
@@ -1395,3 +1395,4 @@ begin
   inherited;
 end;
 end.
+
