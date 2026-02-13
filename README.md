@@ -1,39 +1,53 @@
 # Skia_PlatformerGame
 RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, collision, particles &amp; animated stickman... Enjoy! :D yw   
    
-  <img width="1601" height="579" alt="Unbenannt" src="https://github.com/user-attachments/assets/0bf5ec14-8de6-4f43-88a0-24cadf0b3990" />
-    
-    
-# Skia Platformer Prototype 
+<img width="1612" height="589" alt="Unbenannt" src="https://github.com/user-attachments/assets/94f889b3-6ce9-49b8-8354-4bb5916a4f6f" />
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LaMitaOne/Skia_PlatformerGame)
-   
-A simple 2D platformer prototype built entirely with **Skia** (FMX + Skia4Delphi)    
-Just a quick idea i had to try in 2 hours :D and yea works    
+    
+# Skia Platformer Game
 
-Sample Video: https://www.youtube.com/watch?v=3ZmmeK92jpQ           
-   
-### What's inside    
-- Stickman character with real physics (gravity, jumping, friction, acceleration)     
-- Jumping on blocks (basic collision detection)    
-- Left/right movement + jump with keyboard (Left/Right arrows + Up)    
-- Nice gradient sky background + rounded, shadowed blocks with glow     
-- Animated avatar (slight sway & breathing bounce when jumping, directional facing)     
-    
-No game engine. No external renderer.    
-Just **pure Skia canvas** and hand-written physics.    
-     
-This project is a minimal but robust "skeleton" for a 2D platformer. It provides everything you need to get started—gravity, friction, collisions, and particle effects—without the complexity of a massive engine. It’s the perfect starting point to see exactly how the mechanics work under the hood. All in just a few hundred lines.          
-    
-### Controls   
-- **Left Arrow** → Move left     
-- **Right Arrow** → Move right     
-- **Up Arrow** → Jump     
-   
-For now: **Proof of concept** – built from scratch in 2 hours.    
+A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, and visual effects.
 
-Sample project and exe(zipped) included   
-    
-License: MIT (do whatever you want with it)   
-   
-Happy jumping! 🦘    
+SkiaPlatformer Preview
+🎮 Gameplay Features
+
+This isn't just a static tech demo anymore. It's a vertical slice of a platformer engine:
+
+    Procedural Generation: Every level is randomly generated. It ensures gaps are jumpable, platforms are reachable, and high "Sky Islands" reward exploration.
+    Stargate Levels: Find the portal at the end of the map to teleport to the next level.
+    Dynamic Worlds: The background changes based on the level (Day, Night, Sunset, Alien World). Trees and clouds adjust their colors to match the sky.
+    Enemies: Encounter "Ghosts" that patrol platforms. Touch them, and it's game over! But watch out—they can fall into pits just like you.
+    Physics & Juice: Smooth gravity, friction, and particle explosions. Crates explode with a satisfying burst when collected.
+    Responsive Controls: Tight movement with friction and acceleration.
+
+🕹️ Controls
+
+    Move Left: A or Left Arrow
+    Move Right: D or Right Arrow
+    Jump: W, Space, or Up Arrow
+    Pause Menu: M or Escape
+    Reset Level: R (While paused)
+
+🛠️ Technical Details
+
+    Renderer: Pure Skia Canvas (No Game Engine, no FMX shapes).
+    Threading: Physics runs on a background thread for consistent FPS, synchronized with the main rendering thread.
+    Animations: Procedural "sine-wave" animations for the stickman (swaying, breathing, running legs).
+    Effects: Heavy use of TSkMaskFilter for glowing platforms, blurry clouds, and neon UI.
+
+📦 What's Inside
+
+    SkiaPlatformer.pas: The complete game engine in a single file.
+    Sample project and executable included.
+
+🚀 Getting Started
+
+    Open the project in RAD Studio (Delphi).
+    Ensure you have the Skia4Delphi library installed.
+    Run and play!
+
+License
+
+MIT License - Do whatever you want with it. Credits appreciated but not required.
+
+Happy jumping! 🦘
