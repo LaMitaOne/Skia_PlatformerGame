@@ -1,5 +1,5 @@
 # Skia_PlatformerGame
-RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, collision, particles &amp; animated stickman... Enjoy! :D yw   
+RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, collision, enemys, random levels, particles &amp; animated stickman... Enjoy! :D yw   
    
 <img width="1612" height="589" alt="Unbenannt" src="https://github.com/user-attachments/assets/94f889b3-6ce9-49b8-8354-4bb5916a4f6f" />
 
