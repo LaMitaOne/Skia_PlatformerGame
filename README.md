@@ -4,7 +4,7 @@ RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, col
 <img width="1612" height="589" alt="Unbenannt" src="https://github.com/user-attachments/assets/94f889b3-6ce9-49b8-8354-4bb5916a4f6f" />
 
     
-# Skia Platformer Game
+# Skia Platformer Game v0.2 alpha
 
 A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, and visual effects.
 
@@ -46,6 +46,20 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Ensure you have the Skia4Delphi library installed.
     Run and play!
 
+ ----Latest Changes    
+   v 0.2:    
+     - Added Procedural Map Generation (Gaps, Floating Platforms).    
+     - Added Enemies (Ghosts) with basic AI.     
+     - Added Gate at end of level with world themes.     
+     - Added Pause Menu (M/ESC) and Reset functionality.     
+     - Expanded Controls: WASD + Arrows + Space.     
+     - Added Parallax Backgrounds (Trees, Clouds) matching time of day.     
+    
+   v 0.1: Initial Alpha    
+     - Implemented core AABB collision detection.    
+     - Added "Alive" procedural animation for avatar.    
+     - Integrated particle emitter system.    
+    
 License
 
 MIT License - Do whatever you want with it. Credits appreciated but not required.
