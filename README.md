@@ -1,14 +1,14 @@
 # Skia_PlatformerGame
-RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, collision, enemys, random levels, particles &amp; animated stickman or cat... Enjoy! :D     
+RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, collision, enemys, random levels, audio effects, particles &amp; animated stickman or cat... Enjoy! :D     
    
 <img width="1606" height="587" alt="Unbenannt" src="https://github.com/user-attachments/assets/bd8b234b-9ba6-4699-8ed9-0cc2e6b8a620" />
 
 
 Sample Video: https://www.youtube.com/watch?v=mePkXrbPfJg    
     
-# Skia Platformer Game v0.3  
+# Skia Platformer Game v0.4  
 
-A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, and visual effects. A nice base to start with, its all easy to see how it works in only one file.    
+A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, audio and visual effects. A nice base to start with, its all easy to see how it works in only one file.    
 
 SkiaPlatformer Preview
 🎮 Gameplay Features
@@ -50,6 +50,9 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Run and play!
 
  ----Latest Changes    
+   v 0.4:   
+     - Added Audio effect system with royalty free audios from    
+       https://www.pavsmusic.com/free-sound-pack-kits/    
    v 0.3:    
      - Added cat avatar -> Toggle between "Organic" and "Cat" avatars by pressing 'C'.    
      - Cat Avatar features tail wagging, ear rendering, and directional head movement.   
