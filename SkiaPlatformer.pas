@@ -32,6 +32,8 @@
        eliminating floating elements over pits.
      - Physics & Controls: Reworked friction logic to use exponential deceleration.
        movement now stops instantly and cleanly without the "wiggle" or coasting delay.
+     - Added Audio effect system with royalty free audios from
+       https://www.pavsmusic.com/free-sound-pack-kits/
    v 0.2:
      - Added Procedural Map Generation (Gaps, Floating Platforms).
      - Added Enemies (Ghosts) with basic AI.
@@ -49,10 +51,11 @@
 unit SkiaPlatformer;
 
 interface
+
 uses
   System.SysUtils, System.Types, System.Classes, System.Math,
   System.Generics.Collections, System.UITypes, System.SyncObjs, FMX.Types,
-  FMX.Controls, FMX.Forms, FMX.Skia, System.Skia;
+  FMX.Controls, FMX.Forms, FMX.Skia, Winapi.MMSystem, System.Skia;
 
 const
   TILE_SIZE = 32;
@@ -64,8 +67,12 @@ const
 
 type
   TBodyState = (bsGround, bsAir);
+
   TGameState = (gsPlaying, gsDead, gsWin);
+
   TTileType = (ttEmpty, ttGround, ttGrass, ttStone);
+
+  TAudioEffect = (afNone, afJump, afExplosion, afCrate, afPortal, afWin, afDie);
 
   TTile = record
     TileType: TTileType;
@@ -89,6 +96,7 @@ type
   end;
 
   TDecorType = (dtPlant, dtCrate);
+
   TDecorItem = record
     Pos: TPointF;
     Kind: TDecorType;
@@ -115,10 +123,8 @@ type
     FThread: TThread;
     FActive: Boolean;
     FLock: TCriticalSection;
-
     { Input }
     FKeys: set of Byte;
-
     { Game State }
     FMenuActive: Boolean;
     FScore: Integer;
@@ -126,16 +132,13 @@ type
     FGameState: TGameState;
     FDeadTime: Single;
     FWinTime: Single;
-
     { Avatar System }
     FUseCatAvatar: Boolean; // True = Cat, False = Stickman
     FAnimPhase: Single;
-
     { Cat Avatar Specifics }
     FLookDir: Integer; // -1 for Left, 1 for Right
     FBraking: Boolean;
     FCrouching: Boolean;
-
     { Game World }
     FPlayer: TActor;
     FTiles: TArray<TTile>;
@@ -144,36 +147,31 @@ type
     FGate: TGate;
     FMapCols: Integer;
     FMapRows: Integer;
-
     { Camera }
     FCameraX: Single;
-
     { Visuals }
     FParticles: TList<TParticle>;
-
     { Backgrounds }
     FBgClouds: TArray<TPointF>;
     FBgBushes: TArray<TPointF>;
     FBgMountains: TArray<TPointF>;
-
+    { Audio System }
+    procedure PlayEffect(Effect: TAudioEffect);
     { Core Game Procedures }
     procedure DoPhysicsUpdate(DeltaSec: Double);
     procedure UpdateCamera;
     procedure SafeInvalidate;
     procedure StartThread;
     procedure StopThread;
-
     { World Generation }
     procedure GenerateProceduralMap;
     procedure GenerateBackgroundElements;
-
     { Logic Helpers }
     procedure CheckCrateCollisions;
     procedure CheckEnemyCollisions;
     procedure CheckGateCollision;
     procedure UpdateEnemies(DeltaSec: Double);
     procedure SpawnExplosion(const X, Y: Single; Color: TAlphaColor);
-
     { Rendering Routines }
     procedure DrawBackgrounds(const ACanvas: ISkCanvas; const ADest: TRectF);
     procedure DrawTileMap(const ACanvas: ISkCanvas);
@@ -186,7 +184,6 @@ type
     procedure DrawMenu(const ACanvas: ISkCanvas; const ADest: TRectF);
     procedure DrawAliveAvatar(const ACanvas: ISkCanvas; const Center: TPointF; const Scale: Single; const VelX: Single);
     procedure DrawCatAvatar(const ACanvas: ISkCanvas; const Center: TPointF; const Scale: Single; const VelX: Single);
-
   protected
     procedure Draw(const ACanvas: ISkCanvas; const ADest: TRectF; const AOpacity: Single); override;
   public
@@ -198,10 +195,10 @@ type
   end;
 
 implementation
-
 { =============================================================================
   HELPER: IS SOLID TILE?
 ============================================================================= }
+
 function IsSolidTile(const Tiles: TArray<TTile>; Cols, Rows: Integer; const AX, AY: Single): Boolean;
 var
   Col, Row: Integer;
@@ -212,10 +209,10 @@ begin
     Exit(True);
   Result := Tiles[Row * Cols + Col].Solid;
 end;
-
 { =============================================================================
   PROCEDURE: GENERATE PROCEDURAL MAP
 ============================================================================= }
+
 procedure TPlatformerGame.GenerateProceduralMap;
 var
   C, R, GapLen, PLen: Integer;
@@ -242,7 +239,6 @@ begin
   FGameState := gsPlaying;
   FDeadTime := 0;
   FWinTime := 0;
-
   // 2. Generate Floor
   C := 0;
   while C < FMapCols do
@@ -259,7 +255,6 @@ begin
       Inc(C);
       Continue;
     end;
-
     if (C > LastGapEnd + 6) and (Random(25) = 0) then
     begin
       GapLen := 2 + Random(3);
@@ -285,24 +280,23 @@ begin
       end;
       if Random(30) = 0 then
       begin
-        Item.Pos := PointF(C * TILE_SIZE, (FloorLevel-1) * TILE_SIZE);
+        Item.Pos := PointF(C * TILE_SIZE, (FloorLevel - 1) * TILE_SIZE);
         Item.Kind := dtPlant;
         FDecor.Add(Item);
       end;
       Inc(C);
     end;
   end;
-
   // 3. Generate Floating Platforms (Lower Layer)
   PlatformX := 10;
   while PlatformX < FMapCols - 10 do
   begin
     PlatformX := PlatformX + 3 + Random(4);
     PlatformY := FloorLevel - (3 + Random(3));
-    if PlatformY < 2 then PlatformY := 2;
+    if PlatformY < 2 then
+      PlatformY := 2;
     PLen := 2 + Random(2);
     IsAboveGap := False;
-
     for var P := 0 to PLen do
     begin
       if (PlatformX + P < FMapCols) then
@@ -314,7 +308,6 @@ begin
         end;
       end;
     end;
-
     if not IsAboveGap then
     begin
       for var P := 0 to PLen do
@@ -342,14 +335,14 @@ begin
       end;
     end;
   end;
-
   // 4. Generate High Platforms (Sky Islands)
   PlatformX := 20;
   while PlatformX < FMapCols - 10 do
   begin
     PlatformX := PlatformX + 8 + Random(10);
     PlatformY := FloorLevel - (8 + Random(5));
-    if PlatformY < 1 then PlatformY := 1;
+    if PlatformY < 1 then
+      PlatformY := 1;
     PLen := 2 + Random(3);
     for var P := 0 to PLen do
     begin
@@ -366,58 +359,57 @@ begin
       FDecor.Add(Item);
     end;
   end;
-
   // 5. Generate Stargate (End of Level)
   FGate.Pos := PointF((FMapCols - 15) * TILE_SIZE, (FloorLevel - 2) * TILE_SIZE);
   FGate.Width := 64;
   FGate.Height := 96;
   FGate.Phase := 0;
-
   // 6. Spawn Player
   FPlayer.Pos := PointF(100, FloorLevel * TILE_SIZE - FPlayer.Height - 10);
 end;
 
 procedure TPlatformerGame.GenerateBackgroundElements;
-var I: Integer;
+var
+  I: Integer;
 begin
   // 1. Clouds
   SetLength(FBgClouds, 30);
   for I := 0 to High(FBgClouds) do
     FBgClouds[I] := PointF(Random(FMapCols * TILE_SIZE * 2), Random(300) + 20);
-
   // 2. Mountains
   // X = Position, Y = Height Seed (Small random number to determine size)
   SetLength(FBgMountains, 15);
   for I := 0 to High(FBgMountains) do
     FBgMountains[I] := PointF(Random(FMapCols * TILE_SIZE * 2), 30 + Random(40)); // Smaller seed (30-70)
-
   // 3. Trees/Bushes
   // X = Position, Y = Size Seed
   SetLength(FBgBushes, 50);
   for I := 0 to High(FBgBushes) do
     FBgBushes[I] := PointF(Random(FMapCols * TILE_SIZE * 2), 25 + Random(35)); // Smaller seed (25-60)
 end;
-
 { =============================================================================
   LOGIC
 ============================================================================= }
+
 procedure TPlatformerGame.UpdateCamera;
 var
   ScreenWidth, TargetX: Single;
 begin
-  if FDeadTime > 0 then Exit;
+  if FDeadTime > 0 then
+    Exit;
   ScreenWidth := Width;
   TargetX := FPlayer.Pos.X - (ScreenWidth * 0.4);
-
   FCameraX := FCameraX + (TargetX - FCameraX) * 0.25;
-
-  if FCameraX < 0 then FCameraX := 0;
+  if FCameraX < 0 then
+    FCameraX := 0;
   if FCameraX > (FMapCols * TILE_SIZE) - ScreenWidth + 200 then
     FCameraX := (FMapCols * TILE_SIZE) - ScreenWidth + 200;
 end;
 
 procedure TPlatformerGame.SpawnExplosion(const X, Y: Single; Color: TAlphaColor);
-var I: Integer; P: TParticle;
+var
+  I: Integer;
+  P: TParticle;
 begin
   for I := 0 to 15 do
   begin
@@ -431,55 +423,63 @@ begin
 end;
 
 procedure TPlatformerGame.CheckCrateCollisions;
-var I: Integer; Item: TDecorItem; R: TRectF;
+var
+  I: Integer;
+  Item: TDecorItem;
+  R: TRectF;
 begin
-  if FGameState <> gsPlaying then Exit;
-  R := TRectF.Create(FPlayer.Pos.X, FPlayer.Pos.Y,
-                     FPlayer.Pos.X + FPlayer.Width, FPlayer.Pos.Y + FPlayer.Height);
+  if FGameState <> gsPlaying then
+    Exit;
+  R := TRectF.Create(FPlayer.Pos.X, FPlayer.Pos.Y, FPlayer.Pos.X + FPlayer.Width, FPlayer.Pos.Y + FPlayer.Height);
   for I := FDecor.Count - 1 downto 0 do
   begin
     Item := FDecor[I];
     if Item.Kind = dtCrate then
     begin
-      if R.IntersectsWith(TRectF.Create(Item.Pos.X+2, Item.Pos.Y+2, Item.Pos.X+30, Item.Pos.Y+30)) then
+      if R.IntersectsWith(TRectF.Create(Item.Pos.X + 2, Item.Pos.Y + 2, Item.Pos.X + 30, Item.Pos.Y + 30)) then
       begin
         SpawnExplosion(Item.Pos.X + 16, Item.Pos.Y + 16, TAlphaColors.Orange);
         FDecor.Delete(I);
         Inc(FScore);
+        PlayEffect(afCrate);
       end;
     end;
   end;
 end;
 
 procedure TPlatformerGame.CheckGateCollision;
-var R, R2: TRectF;
+var
+  R, R2: TRectF;
 begin
-  if FGameState <> gsPlaying then Exit;
-  R := TRectF.Create(FPlayer.Pos.X, FPlayer.Pos.Y,
-                     FPlayer.Pos.X + FPlayer.Width, FPlayer.Pos.Y + FPlayer.Height);
-  R2 := TRectF.Create(FGate.Pos.X, FGate.Pos.Y,
-                      FGate.Pos.X + FGate.Width, FGate.Pos.Y + FGate.Height);
+  if FGameState <> gsPlaying then
+    Exit;
+  R := TRectF.Create(FPlayer.Pos.X, FPlayer.Pos.Y, FPlayer.Pos.X + FPlayer.Width, FPlayer.Pos.Y + FPlayer.Height);
+  R2 := TRectF.Create(FGate.Pos.X, FGate.Pos.Y, FGate.Pos.X + FGate.Width, FGate.Pos.Y + FGate.Height);
   if R.IntersectsWith(R2) then
   begin
     FGameState := gsWin;
     FWinTime := 2.0;
-    SpawnExplosion(FGate.Pos.X + FGate.Width/2, FGate.Pos.Y + FGate.Height/2, TAlphaColors.Cyan);
+    SpawnExplosion(FGate.Pos.X + FGate.Width / 2, FGate.Pos.Y + FGate.Height / 2, TAlphaColors.Cyan);
+    PlayEffect(afPortal);
   end;
 end;
 
 procedure TPlatformerGame.CheckEnemyCollisions;
-var I: Integer; E: TEnemy; R, R2: TRectF;
+var
+  I: Integer;
+  E: TEnemy;
+  R, R2: TRectF;
 begin
-  if FGameState <> gsPlaying then Exit;
-  R := TRectF.Create(FPlayer.Pos.X, FPlayer.Pos.Y,
-                     FPlayer.Pos.X + FPlayer.Width, FPlayer.Pos.Y + FPlayer.Height);
+  if FGameState <> gsPlaying then
+    Exit;
+  R := TRectF.Create(FPlayer.Pos.X, FPlayer.Pos.Y, FPlayer.Pos.X + FPlayer.Width, FPlayer.Pos.Y + FPlayer.Height);
   for I := FEnemies.Count - 1 downto 0 do
   begin
     E := FEnemies[I];
     R2 := TRectF.Create(E.Pos.X, E.Pos.Y, E.Pos.X + E.Width, E.Pos.Y + E.Height);
     if R.IntersectsWith(R2) then
     begin
-      SpawnExplosion((R.Left + R.Right)/2, (R.Top + R.Bottom)/2, TAlphaColors.Red);
+      SpawnExplosion((R.Left + R.Right) / 2, (R.Top + R.Bottom) / 2, TAlphaColors.Red);
       FEnemies.Delete(I);
       FGameState := gsDead;
       FDeadTime := 1.5;
@@ -487,13 +487,17 @@ begin
       FPlayer.Vel.X := 0;
       FPlayer.Vel.Y := 0;
       FScore := 0;
+      PlayEffect(afDie);
       Exit;
     end;
   end;
 end;
 
 procedure TPlatformerGame.UpdateEnemies(DeltaSec: Double);
-var I: Integer; E: TEnemy; FloorLevel: Integer;
+var
+  I: Integer;
+  E: TEnemy;
+  FloorLevel: Integer;
 begin
   FloorLevel := FMapRows - 4;
   for I := FEnemies.Count - 1 downto 0 do
@@ -502,17 +506,15 @@ begin
     E.Pos.X := E.Pos.X + E.Vel.X * DeltaSec;
     E.Phase := E.Phase + DeltaSec * 5;
     E.Pos.Y := E.Pos.Y + 15 * DeltaSec;
-
-    if IsSolidTile(FTiles, FMapCols, FMapRows, E.Pos.X + E.Width/2, E.Pos.Y + E.Height) then
+    if IsSolidTile(FTiles, FMapCols, FMapRows, E.Pos.X + E.Width / 2, E.Pos.Y + E.Height) then
     begin
       E.Pos.Y := Trunc((E.Pos.Y + E.Height) / TILE_SIZE) * TILE_SIZE - E.Height;
-      if IsSolidTile(FTiles, FMapCols, FMapRows, E.Pos.X + E.Width/2 + Sign(E.Vel.X)*10, E.Pos.Y + E.Height/2) then
-         E.Vel.X := -E.Vel.X;
+      if IsSolidTile(FTiles, FMapCols, FMapRows, E.Pos.X + E.Width / 2 + Sign(E.Vel.X) * 10, E.Pos.Y + E.Height / 2) then
+        E.Vel.X := -E.Vel.X;
     end;
-
     if E.Pos.Y > (FloorLevel * TILE_SIZE + 100) then
     begin
-      SpawnExplosion(E.Pos.X + E.Width/2, E.Pos.Y, TAlphaColors.Purple);
+      SpawnExplosion(E.Pos.X + E.Width / 2, E.Pos.Y, TAlphaColors.Purple);
       FEnemies.Delete(I);
       Continue;
     end;
@@ -528,12 +530,11 @@ var
   SpawnPos: TPointF;
 begin
   Center := PointF(FPlayer.Pos.X + FPlayer.Width / 2, FPlayer.Pos.Y + FPlayer.Height);
-
   if (FPlayer.State = bsGround) and (Abs(FPlayer.Vel.X) > 0.5) then
   begin
     if Random(5) = 0 then
     begin
-      P.Pos := Center + PointF(0, FPlayer.Height/2 - 29);
+      P.Pos := Center + PointF(0, FPlayer.Height / 2 - 29);
       P.Vel := PointF(-FPlayer.Vel.X * 0.5, -5 - Random * 5);
       P.Life := 0.6;
       P.Color := TAlphaColors.White;
@@ -541,21 +542,19 @@ begin
       FParticles.Add(P);
     end;
   end;
-
   if Random(10) = 0 then
   begin
-     SpawnPos := PointF(FPlayer.Pos.X + Random(Trunc(Width)) - Width/2, Random(FMapRows * TILE_SIZE));
-     if not IsSolidTile(FTiles, FMapCols, FMapRows, SpawnPos.X, SpawnPos.Y) then
-     begin
-       P.Pos := SpawnPos;
-       P.Vel := PointF((Random - 0.5) * 10, (Random - 0.5) * 10);
-       P.Life := 2.0;
-       P.Color := TAlphaColors.Yellow;
-       P.Size := 2;
-       FParticles.Add(P);
-     end;
+    SpawnPos := PointF(FPlayer.Pos.X + Random(Trunc(Width)) - Width / 2, Random(FMapRows * TILE_SIZE));
+    if not IsSolidTile(FTiles, FMapCols, FMapRows, SpawnPos.X, SpawnPos.Y) then
+    begin
+      P.Pos := SpawnPos;
+      P.Vel := PointF((Random - 0.5) * 10, (Random - 0.5) * 10);
+      P.Life := 2.0;
+      P.Color := TAlphaColors.Yellow;
+      P.Size := 2;
+      FParticles.Add(P);
+    end;
   end;
-
   for I := FParticles.Count - 1 downto 0 do
   begin
     P := FParticles[I];
@@ -568,10 +567,10 @@ begin
       FParticles[I] := P;
   end;
 end;
-
 { =============================================================================
   PHYSICS
 ============================================================================= }
+
 procedure TPlatformerGame.DoPhysicsUpdate(DeltaSec: Double);
 var
   Left, Right, Jump: Boolean;
@@ -580,10 +579,10 @@ var
   FloorLevel: Integer;
   OldVelX: Single;
 begin
-  if not FActive then Exit;
-
-  if FMenuActive then Exit;
-
+  if not FActive then
+    Exit;
+  if FMenuActive then
+    Exit;
   // --- WIN STATE ---
   if FGameState = gsWin then
   begin
@@ -598,7 +597,6 @@ begin
     end;
     Exit;
   end;
-
   // --- DEAD STATE ---
   if FGameState = gsDead then
   begin
@@ -615,10 +613,8 @@ begin
     end;
     Exit;
   end;
-
   // --- PLAYING STATE ---
   FloorLevel := FMapRows - 4;
-
   FLock.Acquire;
   try
     Left := Byte(vkLeft) in FKeys;
@@ -627,43 +623,38 @@ begin
   finally
     FLock.Release;
   end;
-
   // Determine braking for Cat Avatar
   OldVelX := FPlayer.Vel.X;
   AccelThisFrame := ACCEL * DeltaSec;
-
-  if Left then FPlayer.Vel.X := Max(FPlayer.Vel.X - AccelThisFrame, -MAX_SPEED)
-  else if Right then FPlayer.Vel.X := Min(FPlayer.Vel.X + AccelThisFrame, MAX_SPEED)
-    else
-    begin
+  if Left then
+    FPlayer.Vel.X := Max(FPlayer.Vel.X - AccelThisFrame, -MAX_SPEED)
+  else if Right then
+    FPlayer.Vel.X := Min(FPlayer.Vel.X + AccelThisFrame, MAX_SPEED)
+  else
+  begin
       // LOGIC: Multiply velocity by 0.85 every frame.
       // This creates a strong, natural braking effect without coasting.
-      FPlayer.Vel.X := FPlayer.Vel.X * 0.85;
-
+    FPlayer.Vel.X := FPlayer.Vel.X * 0.85;
       // If it's super slow, just set to 0 to prevent micro-jitters
-      if Abs(FPlayer.Vel.X) < 0.1 then
-        FPlayer.Vel.X := 0;
-    end;
-
+    if Abs(FPlayer.Vel.X) < 0.1 then
+      FPlayer.Vel.X := 0;
+  end;
   // Simple braking logic: if moving and input opposes movement significantly
   FBraking := (Abs(FPlayer.Vel.X) > 0.5) and ((FPlayer.Vel.X > 0) and Left) or ((FPlayer.Vel.X < 0) and Right);
-
   if Jump and (FPlayer.State = bsGround) then
   begin
     FPlayer.Vel.Y := JUMP_FORCE;
     FPlayer.State := bsAir;
+    PlayEffect(afJump);
   end;
-
   if FPlayer.State = bsAir then
     FPlayer.Vel.Y := FPlayer.Vel.Y + GRAVITY * DeltaSec;
-
   FPlayer.Pos.X := FPlayer.Pos.X + FPlayer.Vel.X * TILE_SIZE * DeltaSec;
-  if FPlayer.Pos.X < 0 then FPlayer.Pos.X := 0;
+  if FPlayer.Pos.X < 0 then
+    FPlayer.Pos.X := 0;
   if FPlayer.Pos.X > FMapCols * TILE_SIZE - FPlayer.Width then
     FPlayer.Pos.X := FMapCols * TILE_SIZE - FPlayer.Width;
-
   NextY := FPlayer.Pos.Y + FPlayer.Vel.Y * TILE_SIZE * DeltaSec;
-
   if IsSolidTile(FTiles, FMapCols, FMapRows, FPlayer.Pos.X + FPlayer.Width / 2, NextY + FPlayer.Height) then
   begin
     FPlayer.Pos.Y := Trunc((NextY + FPlayer.Height) / TILE_SIZE) * TILE_SIZE - FPlayer.Height;
@@ -680,20 +671,19 @@ begin
     FPlayer.Pos.Y := NextY;
     FPlayer.State := bsAir;
   end;
-
   // Pit Fall Death
   if FPlayer.Pos.Y > (FloorLevel * TILE_SIZE + 50) then
   begin
-    SpawnExplosion(FPlayer.Pos.X + FPlayer.Width/2, FPlayer.Pos.Y, TAlphaColors.Red);
+    SpawnExplosion(FPlayer.Pos.X + FPlayer.Width / 2, FPlayer.Pos.Y, TAlphaColors.Red);
     FGameState := gsDead;
     FDeadTime := 1.5;
     FPlayer.Pos.X := -1000;
     FPlayer.Vel.X := 0;
     FPlayer.Vel.Y := 0;
     FScore := 0;
+    PlayEffect(afDie);
     Exit;
   end;
-
   CheckCrateCollisions;
   CheckEnemyCollisions;
   CheckGateCollision;
@@ -701,16 +691,19 @@ begin
   UpdateParticles(DeltaSec);
   UpdateCamera;
 end;
-
 { =============================================================================
   RENDERING
 ============================================================================= }
+
 procedure TPlatformerGame.DrawUI(const ACanvas: ISkCanvas);
-var Font: TSkFont; Paint: ISkPaint; Txt: String;
+var
+  Font: TSkFont;
+  Paint: ISkPaint;
+  Txt: string;
 begin
   Txt := 'Crates: ' + IntToStr(FScore) + ' | Level: ' + IntToStr(FLevel);
-  if FUseCatAvatar then Txt := Txt + ' [CAT MODE]';
-
+  if FUseCatAvatar then
+    Txt := Txt + ' [CAT MODE]';
   Font := TSkFont.Create;
   try
     Paint := TSkPaint.Create;
@@ -719,7 +712,6 @@ begin
     Paint.Color := TAlphaColors.Black;
     Paint.Alpha := 150;
     ACanvas.DrawSimpleText(Txt, 12, 42, Font, Paint);
-
     Paint.Color := TAlphaColors.Yellow;
     Paint.Alpha := 255;
     ACanvas.DrawSimpleText(Txt, 10, 40, Font, Paint);
@@ -742,106 +734,109 @@ var
   TreeSize, MtnSeed, TreeSeed: Single;
 begin
   // --- 1. SKY ---
-  Case (FLevel mod 4) of
-    0: Colors := [$FF0f0c29, $FF302b63, $FF24243e];
-    1: Colors := [$FF87CEEB, $FFADD8E6, $FFF0F8FF];
-    2: Colors := [$FFFF7F50, $FFFD5E53, $FF4B0082];
-    3: Colors := [$FF2F4F4F, $FF008080, $FF20B2AA];
+  case (FLevel mod 4) of
+    0:
+      Colors := [$FF0f0c29, $FF302b63, $FF24243e];
+    1:
+      Colors := [$FF87CEEB, $FFADD8E6, $FFF0F8FF];
+    2:
+      Colors := [$FFFF7F50, $FFFD5E53, $FF4B0082];
+    3:
+      Colors := [$FF2F4F4F, $FF008080, $FF20B2AA];
   else
     Colors := [$FF0f0c29, $FF302b63, $FF24243e];
   end;
-
   Paint := TSkPaint.Create;
-  Paint.Shader := TSkShader.MakeGradientLinear(PointF(0,0), PointF(0, ADest.Height), Colors, nil, TSkTileMode.Clamp);
+  Paint.Shader := TSkShader.MakeGradientLinear(PointF(0, 0), PointF(0, ADest.Height), Colors, nil, TSkTileMode.Clamp);
   ACanvas.DrawPaint(Paint);
   Paint.Shader := nil;
-
   // Parallax Speeds
   ParallaxX1 := -FCameraX * 0.05; // Mountains
   ParallaxX2 := -FCameraX * 0.1;  // Clouds
   ParallaxX3 := -FCameraX * 0.4;  // Trees
-
   Paint.AntiAlias := True;
-
   // --- 2. MOUNTAINS (Triangles anchored at BOTTOM) ---
   PB := TSkPathBuilder.Create;
   Paint.Style := TSkPaintStyle.Fill;
-  if (FLevel mod 4) = 0 then MtnColor := $FF050510 else MtnColor := $FF1a1a2e;
+  if (FLevel mod 4) = 0 then
+    MtnColor := $FF050510
+  else
+    MtnColor := $FF1a1a2e;
   Paint.Color := MtnColor;
-
   for I := 0 to High(FBgMountains) do
   begin
     MtnX := FBgMountains[I].X + ParallaxX1;
     MtnSeed := FBgMountains[I].Y; // Read stored Height Seed
-
     // Anchor at bottom
     MtnBaseY := ADest.Height;
     // Calculate size based on seed (Adjusted to be smaller but visible)
     MtnPeakY := MtnBaseY - (MtnSeed * 4.0);
     MtnWidth := MtnSeed * 5.0;
-
     // Wrap around
-    if MtnX < -MtnWidth then MtnX := MtnX + (FMapCols * TILE_SIZE * 2);
-    if MtnX > Width + MtnWidth then Continue;
-
+    if MtnX < -MtnWidth then
+      MtnX := MtnX + (FMapCols * TILE_SIZE * 2);
+    if MtnX > Width + MtnWidth then
+      Continue;
     // Draw Triangle
     PB.Reset;
-    PB.MoveTo(MtnX - MtnWidth/2, MtnBaseY);
-    PB.LineTo(MtnX + MtnWidth/2, MtnBaseY);
+    PB.MoveTo(MtnX - MtnWidth / 2, MtnBaseY);
+    PB.LineTo(MtnX + MtnWidth / 2, MtnBaseY);
     PB.LineTo(MtnX, MtnPeakY);
     ACanvas.DrawPath(PB.Snapshot, Paint);
   end;
-
   // --- 3. CLOUDS ---
   Paint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Normal, 20.0);
   for I := 0 to High(FBgClouds) do
   begin
     CloudX := FBgClouds[I].X + ParallaxX2;
     CloudY := FBgClouds[I].Y;
-    if CloudX < -200 then CloudX := CloudX + (FMapCols * TILE_SIZE * 2);
-    if CloudX > Width + 200 then Continue;
-    if (FLevel mod 4) = 0 then Paint.Color := $FF3d3d5c else Paint.Color := $FFFFFFFF;
+    if CloudX < -200 then
+      CloudX := CloudX + (FMapCols * TILE_SIZE * 2);
+    if CloudX > Width + 200 then
+      Continue;
+    if (FLevel mod 4) = 0 then
+      Paint.Color := $FF3d3d5c
+    else
+      Paint.Color := $FFFFFFFF;
     Paint.Alpha := 100;
     ACanvas.DrawCircle(PointF(CloudX, CloudY), 60, Paint);
   end;
-
   // --- 4. TREES (Static Shapes anchored at BOTTOM) ---
   Paint.MaskFilter := nil;
-  Case (FLevel mod 4) of
-    0: BushColor := $FF0a0a15;
-    1: BushColor := $FF006400;
-    2: BushColor := $FF8B0000;
-    3: BushColor := $FF004040;
+  case (FLevel mod 4) of
+    0:
+      BushColor := $FF0a0a15;
+    1:
+      BushColor := $FF006400;
+    2:
+      BushColor := $FF8B0000;
+    3:
+      BushColor := $FF004040;
   else
     BushColor := $FF0a0a15;
   end;
   Paint.Color := BushColor;
   Paint.Alpha := 255;
-
   for I := 0 to High(FBgBushes) do
   begin
     BushX := FBgBushes[I].X + ParallaxX3;
     TreeSeed := FBgBushes[I].Y; // Read stored Size Seed
-
     // Calculate Size (Adjusted to be smaller)
     TreeSize := TreeSeed * 1.2;
     TreeBaseY := ADest.Height;
-
-    if BushX < -TreeSize*2 then BushX := BushX + (FMapCols * TILE_SIZE * 2);
-    if BushX > Width + TreeSize*2 then Continue;
-
+    if BushX < -TreeSize * 2 then
+      BushX := BushX + (FMapCols * TILE_SIZE * 2);
+    if BushX > Width + TreeSize * 2 then
+      Continue;
     // Draw Static Tree Parts (No Random here!)
-
     // 1. Main Trunk
     ACanvas.DrawCircle(PointF(BushX, TreeBaseY - TreeSize), TreeSize, Paint);
-
     // 2. Left Branch (Determined by seed to be consistent)
     var LeftSize := TreeSize * 0.7;
-    ACanvas.DrawCircle(PointF(BushX - TreeSize*0.6, TreeBaseY - TreeSize*0.8), LeftSize, Paint);
-
+    ACanvas.DrawCircle(PointF(BushX - TreeSize * 0.6, TreeBaseY - TreeSize * 0.8), LeftSize, Paint);
     // 3. Right Branch
     var RightSize := TreeSize * 0.75;
-    ACanvas.DrawCircle(PointF(BushX + TreeSize*0.6, TreeBaseY - TreeSize*0.85), RightSize, Paint);
+    ACanvas.DrawCircle(PointF(BushX + TreeSize * 0.6, TreeBaseY - TreeSize * 0.85), RightSize, Paint);
   end;
 end;
 
@@ -857,7 +852,6 @@ begin
   GlowPaint.StrokeWidth := 2.0;
   GlowPaint.AntiAlias := True;
   GlowPaint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Solid, 4.0);
-
   for R := 0 to FMapRows - 1 do
     for C := 0 to FMapCols - 1 do
     begin
@@ -866,7 +860,6 @@ begin
         TileRect := TRectF.Create(C * TILE_SIZE, R * TILE_SIZE, (C + 1) * TILE_SIZE, (R + 1) * TILE_SIZE);
         if (TileRect.Right < FCameraX - 50) or (TileRect.Left > FCameraX + Width + 50) then
           Continue;
-
         case FTiles[R * FMapCols + C].TileType of
           ttGrass:
             begin
@@ -901,12 +894,10 @@ begin
   Paint := TSkPaint.Create(TSkPaintStyle.Fill);
   Paint.AntiAlias := True;
   Paint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Solid, 2.0);
-
   for Item in FDecor do
   begin
     if (Item.Pos.X < FCameraX - 100) or (Item.Pos.X > FCameraX + Width + 100) then
       Continue;
-
     case Item.Kind of
       dtPlant:
         begin
@@ -941,18 +932,26 @@ begin
 end;
 
 procedure TPlatformerGame.DrawGate(const ACanvas: ISkCanvas);
-var Paint: ISkPaint; Center: TPointF; PhaseOffset: Single; PathBuilder: ISkPathBuilder; I: Integer; Angle, Radius: Single;
+var
+  Paint: ISkPaint;
+  Center: TPointF;
+  PhaseOffset: Single;
+  PathBuilder: ISkPathBuilder;
+  I: Integer;
+  Angle, Radius: Single;
 begin
   Paint := TSkPaint.Create;
   Paint.AntiAlias := True;
-  Center := PointF(FGate.Pos.X + FGate.Width/2, FGate.Pos.Y + FGate.Height/2);
-
+  Center := PointF(FGate.Pos.X + FGate.Width / 2, FGate.Pos.Y + FGate.Height / 2);
   ACanvas.Save;
   ACanvas.SaveLayer(TSkPaint.Create);
   try
     Paint.Style := TSkPaintStyle.Fill;
     Paint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Solid, 25.0);
-    if Sin(FGate.Phase * 2) > 0 then Paint.Color := $FF00FFFF else Paint.Color := $FFFF00FF;
+    if Sin(FGate.Phase * 2) > 0 then
+      Paint.Color := $FF00FFFF
+    else
+      Paint.Color := $FFFF00FF;
     Paint.Alpha := 180;
     PhaseOffset := Sin(FGate.Phase) * 0.2;
     ACanvas.Save;
@@ -960,12 +959,10 @@ begin
     ACanvas.Scale(1.0 + PhaseOffset, 1.0 - PhaseOffset);
     ACanvas.DrawOval(TRectF.Create(-45, -70, 45, 70), Paint);
     ACanvas.Restore;
-
     Paint.Style := TSkPaintStyle.Fill;
     Paint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Normal, 10.0);
     Paint.Color := $FF050510;
     ACanvas.DrawOval(TRectF.Create(Center.X - 25, Center.Y - 45, Center.X + 25, Center.Y + 45), Paint);
-
     Paint.Style := TSkPaintStyle.Stroke;
     Paint.StrokeWidth := 2;
     Paint.Color := $FFFFFFFF;
@@ -986,31 +983,31 @@ begin
 end;
 
 procedure TPlatformerGame.DrawMenu(const ACanvas: ISkCanvas; const ADest: TRectF);
-var Paint: ISkPaint; Font: TSkFont; Rect: TRectF; CenterX, CenterY: Single;
+var
+  Paint: ISkPaint;
+  Font: TSkFont;
+  Rect: TRectF;
+  CenterX, CenterY: Single;
 begin
   Paint := TSkPaint.Create;
   Paint.Color := $AA000000;
   ACanvas.DrawPaint(Paint);
-
   CenterX := ADest.Width / 2;
   CenterY := ADest.Height / 2;
   Rect := TRectF.Create(CenterX - 150, CenterY - 100, CenterX + 150, CenterY + 100);
   Paint.Color := $FF333344;
   Paint.AntiAlias := True;
   ACanvas.DrawRoundRect(Rect, 20, 20, Paint);
-
   Paint.Style := TSkPaintStyle.Stroke;
   Paint.StrokeWidth := 3;
   Paint.Color := $FFFFFFFF;
   ACanvas.DrawRoundRect(Rect, 20, 20, Paint);
-
   Font := TSkFont.Create;
   try
     Paint := TSkPaint.Create(TSkPaintStyle.Fill);
     Paint.AntiAlias := True;
     Paint.Color := TAlphaColors.White;
     ACanvas.DrawSimpleText('PAUSED', CenterX - 70, CenterY - 50, Font, Paint);
-
     Paint.Color := TAlphaColors.Yellow;
     ACanvas.DrawSimpleText('ESC - Resume', CenterX - 65, CenterY + 10, Font, Paint);
     ACanvas.DrawSimpleText('R - Reset Level', CenterX - 70, CenterY + 40, Font, Paint);
@@ -1021,26 +1018,27 @@ begin
 end;
 
 procedure TPlatformerGame.DrawEnemies(const ACanvas: ISkCanvas);
-var E: TEnemy; Paint, GlowPaint: ISkPaint; Center: TPointF; Offset: Single;
+var
+  E: TEnemy;
+  Paint, GlowPaint: ISkPaint;
+  Center: TPointF;
+  Offset: Single;
 begin
   Paint := TSkPaint.Create(TSkPaintStyle.Fill);
   Paint.AntiAlias := True;
   GlowPaint := TSkPaint.Create(Paint);
   GlowPaint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Solid, 6.0);
   GlowPaint.Color := TAlphaColors.Purple;
-
   for E in FEnemies do
   begin
-    Center := PointF(E.Pos.X + E.Width/2, E.Pos.Y + E.Height/2);
+    Center := PointF(E.Pos.X + E.Width / 2, E.Pos.Y + E.Height / 2);
     Offset := Sin(E.Phase) * 3.0;
     Paint.Color := TAlphaColors.Fuchsia;
     ACanvas.DrawOval(TRectF.Create(Center.X - 14, Center.Y - 12 + Offset, Center.X + 14, Center.Y + 12 + Offset), GlowPaint);
     ACanvas.DrawOval(TRectF.Create(Center.X - 12, Center.Y - 10 + Offset, Center.X + 12, Center.Y + 10 + Offset), Paint);
-
     Paint.Color := TAlphaColors.White;
     ACanvas.DrawCircle(PointF(Center.X - 4, Center.Y - 2 + Offset), 3, Paint);
     ACanvas.DrawCircle(PointF(Center.X + 4, Center.Y - 2 + Offset), 3, Paint);
-
     Paint.Color := TAlphaColors.Black;
     ACanvas.DrawCircle(PointF(Center.X - 4, Center.Y - 2 + Offset), 1.5, Paint);
     ACanvas.DrawCircle(PointF(Center.X + 4, Center.Y - 2 + Offset), 1.5, Paint);
@@ -1048,19 +1046,24 @@ begin
 end;
 
 procedure TPlatformerGame.DrawParticles(const ACanvas: ISkCanvas);
-var P: TParticle; Paint: ISkPaint; AlphaVal: Integer;
+var
+  P: TParticle;
+  Paint: ISkPaint;
+  AlphaVal: Integer;
 begin
-  if FParticles.Count = 0 then Exit;
+  if FParticles.Count = 0 then
+    Exit;
   Paint := TSkPaint.Create(TSkPaintStyle.Fill);
   Paint.AntiAlias := True;
   Paint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Solid, 3.0);
-
   for P in FParticles do
   begin
     Paint.Color := P.Color;
     AlphaVal := Round(P.Life * 180);
-    if AlphaVal > 255 then AlphaVal := 255;
-    if AlphaVal < 0 then AlphaVal := 0;
+    if AlphaVal > 255 then
+      AlphaVal := 255;
+    if AlphaVal < 0 then
+      AlphaVal := 0;
     Paint.Alpha := AlphaVal;
     ACanvas.DrawCircle(P.Pos, P.Size * P.Life, Paint);
   end;
@@ -1084,32 +1087,40 @@ begin
   Paint.StrokeJoin := TSkStrokeJoin.Round;
   Paint.AntiAlias := True;
   Paint.Color := $FF202020;
-
   GlowPaint := TSkPaint.Create(Paint);
   GlowPaint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Solid, 8.0);
   GlowPaint.Color := $FF00ffff;
-
-  if VelX < -0.1 then LookDir := -1 else LookDir := 1;
+  if VelX < -0.1 then
+    LookDir := -1
+  else
+    LookDir := 1;
   YOffset := 3.0 * Scale + 3.0;
-
   if FPlayer.State = bsGround then
   begin
     if Abs(VelX) > 0.1 then
-    begin CurrentPhase := FAnimPhase * 8; Breathe := Sin(CurrentPhase) * 2.0 * Scale; Sway := 0; end
+    begin
+      CurrentPhase := FAnimPhase * 8;
+      Breathe := Sin(CurrentPhase) * 2.0 * Scale;
+      Sway := 0;
+    end
     else
-    begin CurrentPhase := 0; Breathe := 0; Sway := 0; end;
+    begin
+      CurrentPhase := 0;
+      Breathe := 0;
+      Sway := 0;
+    end;
   end
   else
   begin
-    CurrentPhase := FAnimPhase; Breathe := Sin(CurrentPhase * 3) * 1.5 * Scale; Sway := Sin(CurrentPhase) * 3.0 * Scale;
+    CurrentPhase := FAnimPhase;
+    Breathe := Sin(CurrentPhase * 3) * 1.5 * Scale;
+    Sway := Sin(CurrentPhase) * 3.0 * Scale;
   end;
-
   HeadRadius := 7.0 * Scale;
   BodyHeight := 24.0 * Scale;
   HeadPos := PointF(Center.X + Sway, Center.Y + Breathe + YOffset);
   NeckPos := PointF(Center.X + Sway, Center.Y + Breathe + HeadRadius + YOffset);
   HipPos := PointF(Center.X + (Sway * 0.5), Center.Y + Breathe + HeadRadius + BodyHeight + YOffset);
-
   if FPlayer.State = bsAir then
   begin
     FootL := PointF(HipPos.X - 8 * Scale, HipPos.Y + 10 * Scale);
@@ -1119,10 +1130,10 @@ begin
   end
   else if Abs(VelX) > 0.1 then
   begin
-    FootL := PointF(HipPos.X - 5 * Scale + Sin(CurrentPhase)*4*Scale, HipPos.Y + 14 * Scale);
-    FootR := PointF(HipPos.X + 5 * Scale - Sin(CurrentPhase)*4*Scale, HipPos.Y + 14 * Scale);
-    HandL := PointF(NeckPos.X - 9 * Scale, NeckPos.Y + 12 * Scale + Sin(CurrentPhase)*2*Scale);
-    HandR := PointF(NeckPos.X + 9 * Scale, NeckPos.Y + 12 * Scale - Sin(CurrentPhase)*2*Scale);
+    FootL := PointF(HipPos.X - 5 * Scale + Sin(CurrentPhase) * 4 * Scale, HipPos.Y + 14 * Scale);
+    FootR := PointF(HipPos.X + 5 * Scale - Sin(CurrentPhase) * 4 * Scale, HipPos.Y + 14 * Scale);
+    HandL := PointF(NeckPos.X - 9 * Scale, NeckPos.Y + 12 * Scale + Sin(CurrentPhase) * 2 * Scale);
+    HandR := PointF(NeckPos.X + 9 * Scale, NeckPos.Y + 12 * Scale - Sin(CurrentPhase) * 2 * Scale);
   end
   else
   begin
@@ -1131,21 +1142,22 @@ begin
     HandL := PointF(NeckPos.X - 9 * Scale, NeckPos.Y + 12 * Scale);
     HandR := PointF(NeckPos.X + 9 * Scale, NeckPos.Y + 12 * Scale);
   end;
-
   PB := TSkPathBuilder.Create;
-  PB.MoveTo(HipPos.X, HipPos.Y); PB.LineTo(FootL.X, FootL.Y);
-  PB.MoveTo(HipPos.X, HipPos.Y); PB.LineTo(FootR.X, FootR.Y);
-  PB.MoveTo(NeckPos.X, NeckPos.Y); PB.LineTo(HandL.X, HandL.Y);
-  PB.MoveTo(NeckPos.X, NeckPos.Y); PB.LineTo(HandR.X, HandR.Y);
-  PB.MoveTo(NeckPos.X, NeckPos.Y); PB.LineTo(HipPos.X, HipPos.Y);
-
+  PB.MoveTo(HipPos.X, HipPos.Y);
+  PB.LineTo(FootL.X, FootL.Y);
+  PB.MoveTo(HipPos.X, HipPos.Y);
+  PB.LineTo(FootR.X, FootR.Y);
+  PB.MoveTo(NeckPos.X, NeckPos.Y);
+  PB.LineTo(HandL.X, HandL.Y);
+  PB.MoveTo(NeckPos.X, NeckPos.Y);
+  PB.LineTo(HandR.X, HandR.Y);
+  PB.MoveTo(NeckPos.X, NeckPos.Y);
+  PB.LineTo(HipPos.X, HipPos.Y);
   ACanvas.DrawPath(PB.Snapshot, GlowPaint);
   ACanvas.DrawPath(PB.Snapshot, Paint);
-
   Paint.Style := TSkPaintStyle.Fill;
   ACanvas.DrawCircle(HeadPos, HeadRadius, GlowPaint);
   ACanvas.DrawCircle(HeadPos, HeadRadius, Paint);
-
   Paint.Color := TAlphaColors.White;
   Paint.MaskFilter := nil;
   var EyeL := PointF(HeadPos.X + (3 * Scale * LookDir), HeadPos.Y - 2 * Scale);
@@ -1166,71 +1178,64 @@ begin
   Paint.Style := TSkPaintStyle.Fill;
   Paint.AntiAlias := True;
   Paint.Color := $FF333333;
-
   GlowPaint := TSkPaint.Create(Paint);
   GlowPaint.MaskFilter := TSkMaskFilter.MakeBlur(TSkBlurStyle.Solid, 6.0);
   GlowPaint.Color := $FF00FFFF;
-
   // HEAD SHAKE FIX:
   // Only update direction if we are moving fast enough.
   // If Braking (slowing down), keep current look direction.
   if not FBraking then
   begin
-    if VelX < -0.5 then FLookDir := -1
-    else if VelX > 0.5 then FLookDir := 1;
+    if VelX < -0.5 then
+      FLookDir := -1
+    else if VelX > 0.5 then
+      FLookDir := 1;
   end;
-
-  if FLookDir = 0 then FLookDir := 1;
-
+  if FLookDir = 0 then
+    FLookDir := 1;
   var BodyDrop := 16.0;
   var HeadLift := -10.0;
-
   RunPhase := FAnimPhase * 10;
-
   if FCrouching then
   begin
     BodyRect := TRectF.Create(Center.X - 20, Center.Y + BodyDrop + 10, Center.X + 20, Center.Y + BodyDrop + 28);
-  end else
+  end
+  else
   begin
     if Abs(VelX) > 0.5 then
       BodyRect := TRectF.Create(Center.X - 18, Center.Y + BodyDrop, Center.X + 18, Center.Y + BodyDrop + 18)
     else
       BodyRect := TRectF.Create(Center.X - 14, Center.Y + BodyDrop, Center.X + 14, Center.Y + BodyDrop + 20);
   end;
-
   ACanvas.DrawOval(BodyRect, GlowPaint);
   ACanvas.DrawOval(BodyRect, Paint);
-
   // Legs
   Paint.Style := TSkPaintStyle.Stroke;
   Paint.StrokeWidth := 3.0;
   Paint.StrokeCap := TSkStrokeCap.Round;
   var LegOffset := 0.0;
-  if Abs(VelX) > 0.5 then LegOffset := Sin(RunPhase) * 5.0;
-
+  if Abs(VelX) > 0.5 then
+    LegOffset := Sin(RunPhase) * 5.0;
   if not FCrouching then
   begin
-    ACanvas.DrawLine(PointF(BodyRect.Left  + 4, BodyRect.Bottom), PointF(BodyRect.Left  + 4 + LegOffset, BodyRect.Bottom + 8), Paint);
-    ACanvas.DrawLine(PointF(BodyRect.Left  + 8, BodyRect.Bottom), PointF(BodyRect.Left  + 8 - LegOffset, BodyRect.Bottom + 8), Paint);
+    ACanvas.DrawLine(PointF(BodyRect.Left + 4, BodyRect.Bottom), PointF(BodyRect.Left + 4 + LegOffset, BodyRect.Bottom + 8), Paint);
+    ACanvas.DrawLine(PointF(BodyRect.Left + 8, BodyRect.Bottom), PointF(BodyRect.Left + 8 - LegOffset, BodyRect.Bottom + 8), Paint);
     ACanvas.DrawLine(PointF(BodyRect.Right - 4, BodyRect.Bottom), PointF(BodyRect.Right - 4 + LegOffset, BodyRect.Bottom + 8), Paint);
     ACanvas.DrawLine(PointF(BodyRect.Right - 8, BodyRect.Bottom), PointF(BodyRect.Right - 8 - LegOffset, BodyRect.Bottom + 8), Paint);
-  end else
+  end
+  else
   begin
-    ACanvas.DrawLine(PointF(BodyRect.Left  + 4, BodyRect.Bottom - 2), PointF(BodyRect.Left  + 2, BodyRect.Bottom + 2), Paint);
+    ACanvas.DrawLine(PointF(BodyRect.Left + 4, BodyRect.Bottom - 2), PointF(BodyRect.Left + 2, BodyRect.Bottom + 2), Paint);
     ACanvas.DrawLine(PointF(BodyRect.Right - 4, BodyRect.Bottom - 2), PointF(BodyRect.Right - 2, BodyRect.Bottom + 2), Paint);
   end;
-
   // Head
   Paint.Style := TSkPaintStyle.Fill;
   var HeadXOffset := FLookDir * 10;
-  if Abs(VelX) > 0.5 then HeadXOffset := FLookDir * 15;
-
-  HeadRect := TRectF.Create(Center.X - 10 + HeadXOffset, Center.Y + BodyDrop + HeadLift - 5,
-                            Center.X + 10 + HeadXOffset, Center.Y + BodyDrop + HeadLift + 15);
-
+  if Abs(VelX) > 0.5 then
+    HeadXOffset := FLookDir * 15;
+  HeadRect := TRectF.Create(Center.X - 10 + HeadXOffset, Center.Y + BodyDrop + HeadLift - 5, Center.X + 10 + HeadXOffset, Center.Y + BodyDrop + HeadLift + 15);
   ACanvas.DrawOval(HeadRect, GlowPaint);
   ACanvas.DrawOval(HeadRect, Paint);
-
   // Ears
   PB := TSkPathBuilder.Create;
   PB.MoveTo(HeadRect.Left + 2, HeadRect.Top + 5);
@@ -1240,29 +1245,24 @@ begin
   PB.LineTo(HeadRect.Right - 6, HeadRect.Top - 8);
   PB.LineTo(HeadRect.Right - 2, HeadRect.Top + 5);
   ACanvas.DrawPath(PB.Snapshot, Paint);
-
   // Tail
   TailWag := Sin(FAnimPhase * 6) * 5.0;
   Paint.Style := TSkPaintStyle.Stroke;
   Paint.StrokeWidth := 3.0;
   Paint.Color := $FF333333;
-
   TailStart := PointF(BodyRect.CenterPoint.X - (FLookDir * 15), BodyRect.CenterPoint.Y);
   TailMid := PointF(TailStart.X - (FLookDir * 15), Center.Y + BodyDrop + TailWag);
   TailEnd := PointF(TailMid.X - (FLookDir * 5), Center.Y + BodyDrop - 15 + TailWag);
-
   PB := TSkPathBuilder.Create;
   PB.MoveTo(TailStart.X, TailStart.Y);
   PB.QuadTo(TailMid.X, TailMid.Y, TailEnd.X, TailEnd.Y);
   ACanvas.DrawPath(PB.Snapshot, Paint);
-
   // Eyes
   Paint.Style := TSkPaintStyle.Fill;
   Paint.Color := TAlphaColors.Yellow;
   var EyeShift := FLookDir * 2;
   ACanvas.DrawCircle(PointF(HeadRect.CenterPoint.X - 3 + EyeShift, HeadRect.CenterPoint.Y), 3, Paint);
   ACanvas.DrawCircle(PointF(HeadRect.CenterPoint.X + 3 + EyeShift, HeadRect.CenterPoint.Y), 3, Paint);
-
   Paint.Color := TAlphaColors.Black;
   ACanvas.DrawOval(TRectF.Create(HeadRect.CenterPoint.X - 4 + EyeShift, HeadRect.CenterPoint.Y - 1.5, HeadRect.CenterPoint.X - 2 + EyeShift, HeadRect.CenterPoint.Y + 1.5), Paint);
   ACanvas.DrawOval(TRectF.Create(HeadRect.CenterPoint.X + 2 + EyeShift, HeadRect.CenterPoint.Y - 1.5, HeadRect.CenterPoint.X + 4 + EyeShift, HeadRect.CenterPoint.Y + 1.5), Paint);
@@ -1273,7 +1273,6 @@ begin
   DrawBackgrounds(ACanvas, ADest);
   ACanvas.Save;
   ACanvas.Translate(-FCameraX, 0);
-
   FLock.Acquire;
   try
     DrawTileMap(ACanvas);
@@ -1281,7 +1280,6 @@ begin
     DrawGate(ACanvas);
     DrawEnemies(ACanvas);
     DrawParticles(ACanvas);
-
     if FGameState = gsPlaying then
     begin
       FAnimPhase := FAnimPhase + 0.1;
@@ -1293,25 +1291,23 @@ begin
       else
         DrawAliveAvatar(ACanvas, PlayerCenter, 1.0, FPlayer.Vel.X);
     end;
-
     FGate.Phase := FGate.Phase + 0.05;
   finally
     FLock.Release;
     ACanvas.Restore;
   end;
-
   DrawUI(ACanvas);
-
   if FMenuActive then
     DrawMenu(ACanvas, ADest);
 end;
-
 { =============================================================================
   LIFECYCLE
 ============================================================================= }
+
 procedure TPlatformerGame.SafeInvalidate;
 begin
-  if csDestroying in ComponentState then Exit;
+  if csDestroying in ComponentState then
+    Exit;
   TThread.Queue(nil,
     procedure
     begin
@@ -1325,19 +1321,21 @@ end;
 
 procedure TPlatformerGame.StartThread;
 begin
-  if Assigned(FThread) then Exit;
+  if Assigned(FThread) then
+    Exit;
   FThread := TThread.CreateAnonymousThread(
     procedure
-    var LastTime, NowTime, DeltaMS: Cardinal;
+    var
+      LastTime, NowTime, DeltaMS: Cardinal;
     begin
       LastTime := TThread.GetTickCount;
       while not TThread.CheckTerminated do
       begin
         NowTime := TThread.GetTickCount;
         DeltaMS := NowTime - LastTime;
-        if DeltaMS = 0 then DeltaMS := 1;
+        if DeltaMS = 0 then
+          DeltaMS := 1;
         LastTime := NowTime;
-
         if FActive then
         begin
           DoPhysicsUpdate(DeltaMS / 1000);
@@ -1361,6 +1359,8 @@ begin
 end;
 
 constructor TPlatformerGame.Create(AOwner: TComponent);
+var
+  i: Integer;
 begin
   inherited Create(AOwner);
   FLock := TCriticalSection.Create;
@@ -1368,28 +1368,25 @@ begin
   HitTest := True;
   CanFocus := True;
   TabStop := True;
-
   FActive := True;
   FLevel := 1;
   FGameState := gsPlaying;
   FMapCols := 200;
   FMapRows := 20;
   FCameraX := 0;
-
   FParticles := TList<TParticle>.Create;
   FDecor := TList<TDecorItem>.Create;
   FEnemies := TList<TEnemy>.Create;
   SetLength(FTiles, FMapCols * FMapRows);
-
   FPlayer.Width := 28;
   FPlayer.Height := 56;
-
   // Avatar Defaults
   FUseCatAvatar := False;
   FLookDir := 1;
   FBraking := False;
   FCrouching := False;
 
+  //start
   GenerateBackgroundElements;
   GenerateProceduralMap;
   StartThread;
@@ -1403,6 +1400,51 @@ begin
   FreeAndNil(FDecor);
   FreeAndNil(FEnemies);
   inherited;
+end;
+
+procedure TPlatformerGame.PlayEffect(Effect: TAudioEffect);
+var
+  FileName, BasePath: string;
+  Flags: Cardinal;
+begin
+  if Effect = afNone then
+    Exit;
+
+  // 1. Get the folder where the EXE is running
+  BasePath := ExtractFilePath(ParamStr(0));
+
+  // 2. Map Effect to Filename
+  case Effect of
+    afJump:
+      FileName := 'Game Design Sound Effects - Pavs Music\39 - Jump.wav';
+    afExplosion:
+      FileName := 'Game Design Sound Effects - Pavs Music\47 - Crunch.wav';
+    afCrate:
+      FileName := 'Game Design Sound Effects - Pavs Music\05 - Equip.wav';
+    afPortal:
+      FileName := 'Game Design Sound Effects - Pavs Music\12 - TingaLing.wav';
+    afWin:
+      FileName := 'Game Design Sound Effects - Pavs Music\34 - Useful Sound 18.wav';
+    afDie:
+      FileName := 'Game Design Sound Effects - Pavs Music\03 - Crush.wav';
+  else
+    FileName := '';
+  end;
+
+  if FileName = '' then
+    Exit;
+  FileName := BasePath + FileName;
+
+  if not FileExists(FileName) then
+    Exit;
+
+  // 3. Play using Windows API
+  // SND_ASYNC = Don't wait for sound to finish (game continues)
+  // SND_FILENAME = We are passing a file path
+  // SND_NODEFAULT = Don't play the default "ding" if file fails
+  Flags := SND_ASYNC or SND_FILENAME or SND_NODEFAULT;
+
+  PlaySound(PChar(FileName), 0, Flags);
 end;
 
 procedure TPlatformerGame.KeyDown(var Key: Word; var KeyChar: WideChar; Shift: TShiftState);
@@ -1419,7 +1461,6 @@ begin
     Repaint;
     Exit;
   end;
-
   // 2. MENU INPUTS (Reset / Toggle)
   if FMenuActive then
   begin
@@ -1434,7 +1475,6 @@ begin
       Redraw;
       Repaint;
     end;
-
     // Toggle Avatar even in menu or just generally?
     // Let's allow it always for fun, but here is good too.
     if (KeyChar = 'C') or (KeyChar = 'c') then
@@ -1442,11 +1482,11 @@ begin
       FUseCatAvatar := not FUseCatAvatar;
       Key := 0;
       KeyChar := #0;
-      Redraw; Repaint;
+      Redraw;
+      Repaint;
     end;
     Exit;
   end;
-
   // 3. TOGGLE AVATAR (Global Shortcut)
   if (KeyChar = 'C') or (KeyChar = 'c') then
   begin
@@ -1455,28 +1495,35 @@ begin
     KeyChar := #0;
     Exit;
   end;
-
   // 4. MAP CONTROLS
   GameKey := 0;
   case Key of
-    $25: GameKey := $25; // vkLeft
-    $27: GameKey := $27; // vkRight
-    $26: GameKey := $26; // vkUp
-    $28: GameKey := $28; // vkDown
-    $20: GameKey := $26; // vkSpace -> Up
+    $25:
+      GameKey := $25; // vkLeft
+    $27:
+      GameKey := $27; // vkRight
+    $26:
+      GameKey := $26; // vkUp
+    $28:
+      GameKey := $28; // vkDown
+    $20:
+      GameKey := $26; // vkSpace -> Up
   end;
-
   if GameKey = 0 then
   begin
     case KeyChar of
-      'A', 'a': GameKey := $25;
-      'D', 'd': GameKey := $27;
-      'W', 'w': GameKey := $26;
-      'S', 's': GameKey := $28;
-      ' ':      GameKey := $26;
+      'A', 'a':
+        GameKey := $25;
+      'D', 'd':
+        GameKey := $27;
+      'W', 'w':
+        GameKey := $26;
+      'S', 's':
+        GameKey := $28;
+      ' ':
+        GameKey := $26;
     end;
   end;
-
   if GameKey > 0 then
   begin
     FLock.Acquire;
@@ -1495,28 +1542,36 @@ procedure TPlatformerGame.KeyUp(var Key: Word; var KeyChar: WideChar; Shift: TSh
 var
   GameKey: Byte;
 begin
-  if FMenuActive then Exit;
+  if FMenuActive then
+    Exit;
   GameKey := 0;
-
   case Key of
-    $25: GameKey := $25;
-    $27: GameKey := $27;
-    $26: GameKey := $26;
-    $28: GameKey := $28;
-    $20: GameKey := $26;
+    $25:
+      GameKey := $25;
+    $27:
+      GameKey := $27;
+    $26:
+      GameKey := $26;
+    $28:
+      GameKey := $28;
+    $20:
+      GameKey := $26;
   end;
-
   if GameKey = 0 then
   begin
     case KeyChar of
-      'A', 'a': GameKey := $25;
-      'D', 'd': GameKey := $27;
-      'W', 'w': GameKey := $26;
-      'S', 's': GameKey := $28;
-      ' ':      GameKey := $26;
+      'A', 'a':
+        GameKey := $25;
+      'D', 'd':
+        GameKey := $27;
+      'W', 'w':
+        GameKey := $26;
+      'S', 's':
+        GameKey := $28;
+      ' ':
+        GameKey := $26;
     end;
   end;
-
   if GameKey > 0 then
   begin
     FLock.Acquire;
@@ -1532,3 +1587,4 @@ begin
 end;
 
 end.
+
