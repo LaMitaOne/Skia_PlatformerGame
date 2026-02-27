@@ -1,13 +1,13 @@
 # Skia_PlatformerGame
-RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, collision, enemys, random levels, particles &amp; animated stickman... Enjoy! :D yw   
+RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, collision, enemys, random levels, particles &amp; animated stickman or cat... Enjoy! :D     
    
 <img width="1612" height="589" alt="Unbenannt" src="https://github.com/user-attachments/assets/94f889b3-6ce9-49b8-8354-4bb5916a4f6f" />
 
 Sample Video: https://www.youtube.com/watch?v=mePkXrbPfJg    
     
-# Skia Platformer Game v0.2 alpha
+# Skia Platformer Game v0.3  
 
-A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, and visual effects.
+A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, and visual effects. A nice base to start with, its all easy to see how it works in only one file.    
 
 SkiaPlatformer Preview
 🎮 Gameplay Features
@@ -28,6 +28,7 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Jump: W, Space, or Up Arrow
     Pause Menu: M or Escape
     Reset Level: R (While paused)
+    Switch Avatar: C (Cat or stickman)
 
 🛠️ Technical Details
 
@@ -48,6 +49,14 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Run and play!
 
  ----Latest Changes    
+   v 0.3:    
+     - Added cat avatar -> Toggle between "Organic" and "Cat" avatars by pressing 'C'.    
+     - Cat Avatar features tail wagging, ear rendering, and directional head movement.   
+     - Added a new "Far Mountains" background layer with parallax scrolling;   
+     - Fixed - all scenery (trees, mountains) now anchors to the bottom of the screen,   
+       eliminating floating elements over pits.    
+     - Physics & Controls: Reworked friction logic to use exponential deceleration.    
+       movement now stops instantly and cleanly without the "wiggle" or coasting delay.   
    v 0.2:    
      - Added Procedural Map Generation (Gaps, Floating Platforms).    
      - Added Enemies (Ghosts) with basic AI.     
