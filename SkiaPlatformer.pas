@@ -18,12 +18,15 @@
   - Particle System: Dynamic visual effects (Explosions, Dust, Fireflies).
 *******************************************************************************}
 
-{ Skia-Platformer v0.3                                                  }
+{ Skia-Platformer v0.4                                                         }
 { by Lara Miriam Tamy Reschke                                                  }
 {                                                                              }
 {------------------------------------------------------------------------------}
 {
  ----Latest Changes
+   v 0.4:
+     - Added Audio effect system with royalty free audios from
+       https://www.pavsmusic.com/free-sound-pack-kits/
    v 0.3:
      - Added cat avatar -> Toggle between "Organic" and "Cat" avatars by pressing 'C'.
      - Cat Avatar features tail wagging, ear rendering, and directional head movement.
@@ -32,8 +35,6 @@
        eliminating floating elements over pits.
      - Physics & Controls: Reworked friction logic to use exponential deceleration.
        movement now stops instantly and cleanly without the "wiggle" or coasting delay.
-     - Added Audio effect system with royalty free audios from
-       https://www.pavsmusic.com/free-sound-pack-kits/
    v 0.2:
      - Added Procedural Map Generation (Gaps, Floating Platforms).
      - Added Enemies (Ghosts) with basic AI.
