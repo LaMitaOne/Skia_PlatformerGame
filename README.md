@@ -2,7 +2,12 @@
 RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, collision, enemys, random levels, audio effects, particles &amp; animated stickman or cat... Enjoy! :D     
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LaMitaOne/Skia_PlatformerGame)    
-   
+     
+deepwiki:    
+"The entirety of the game logic, physics, and rendering is contained within SkiaPlatformer.pas.      
+ This "everything-in-one-place" approach provides a high-density learning resource for technical      
+ users interested in engine architecture."    
+    
 <img width="1606" height="587" alt="Unbenannt" src="https://github.com/user-attachments/assets/bd8b234b-9ba6-4699-8ed9-0cc2e6b8a620" />
 
 
