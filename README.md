@@ -3,7 +3,7 @@ RADStudio FMX / Skia4Delphi platformer game prototype with physics, jumping, col
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/LaMitaOne/Skia_PlatformerGame)    
      
-deepwiki:    
+DeepWiki:    
 "The entirety of the game logic, physics, and rendering is contained within SkiaPlatformer.pas.      
  This "everything-in-one-place" approach provides a high-density learning resource for technical      
  users interested in engine architecture."    
