@@ -15,7 +15,7 @@ Sample Video: https://www.youtube.com/watch?v=mePkXrbPfJg
     
 # Skia Platformer Game v0.4  
 
-A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, audio and visual effects. A nice base to start with, its all easy to see how it works in only one file.    
+A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, audio and visual effects.    
 
 SkiaPlatformer Preview
 🎮 Gameplay Features
