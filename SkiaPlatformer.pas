@@ -28,7 +28,7 @@
      - Added Audio effect system with royalty free audios from
        https://www.pavsmusic.com/free-sound-pack-kits/
    v 0.3:
-     - Added cat avatar -> Toggle between "Organic" and "Cat" avatars by pressing 'C'.
+     - Added cat avatar -> Toggle between "Stickman" and "Cat" avatars by pressing 'C'.
      - Cat Avatar features tail wagging, ear rendering, and directional head movement.
      - Added a new "Far Mountains" background layer with parallax scrolling;
      - Fixed - all scenery (trees, mountains) now anchors to the bottom of the screen,
