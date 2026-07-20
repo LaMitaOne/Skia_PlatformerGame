@@ -8,7 +8,7 @@ DeepWiki:
  This "everything-in-one-place" approach provides a high-density learning resource for technical      
  users interested in engine architecture."    
     
-<img width="1606" height="587" alt="Unbenannt" src="https://github.com/user-attachments/assets/e5703846-c46a-4408-8afb-fc96516bc9a5" />
+<img width="1606" height="591" alt="Unbenannt" src="https://github.com/user-attachments/assets/c7dd4161-659f-4ef0-ad7c-6017c9ae93e4" />
 
 
 Sample Video: https://www.youtube.com/watch?v=mePkXrbPfJg    
