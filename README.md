@@ -8,12 +8,12 @@ DeepWiki:
  This "everything-in-one-place" approach provides a high-density learning resource for technical      
  users interested in engine architecture."    
     
-<img width="1606" height="587" alt="Unbenannt" src="https://github.com/user-attachments/assets/bd8b234b-9ba6-4699-8ed9-0cc2e6b8a620" />
+<img width="1606" height="587" alt="Unbenannt" src="https://github.com/user-attachments/assets/e5703846-c46a-4408-8afb-fc96516bc9a5" />
 
 
 Sample Video: https://www.youtube.com/watch?v=mePkXrbPfJg    
     
-# Skia Platformer Game v0.4  
+# Skia Platformer Game v0.5  
 
 A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, audio and visual effects.    
 
@@ -57,6 +57,20 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Run and play!
 
  ----Latest Changes    
+   v 0.5:   
+     - Visuals Overhaul, Game Feel & Dynamic Themes Update    
+     - Added Procedural Texture Generation: Grass, Dirt, and Stone are now     
+       rendered using a code-generated 8-variant texture atlas. No external     
+       image files required!     
+     - Dynamic Visual Styles: Press 'V' to cycle through rendering modes:     
+       1. Standard (Organic nature textures)     
+       2. Sci-Fi/Cyberpunk (Dark neon-cracked terrain)     
+       3. Cuphead Mode (Vintage film grain, sepia tint, and vignette overlay)     
+     - Avatar Animations: Reworked jump physics for both Stickman and Cat.     
+       Legs no longer play the running animation while in the air (bsAir);     
+       instead, they lock into a dynamic jumping pose.     
+     - Backgrounds: Replaced mountain snow with deterministic rock structures     
+       and cracks. Trees now feature procedural leaf clusters.      
    v 0.4:   
      - Added Audio effect system with royalty free audios from    
        https://www.pavsmusic.com/free-sound-pack-kits/    
