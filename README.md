@@ -38,6 +38,7 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Pause Menu: M or Escape
     Reset Level: R (While paused)
     Switch Avatar: C (Cat or stickman)
+    Switch visual style: V  
 
 🛠️ Technical Details
 
