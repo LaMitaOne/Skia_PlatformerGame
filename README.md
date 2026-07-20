@@ -85,4 +85,13 @@ License
 
 MIT License - Do whatever you want with it. Credits appreciated but not required.
 
-Happy jumping! 🦘
+Happy jumping! 🦘   
+
+other game prototypes i made:
+    
+https://github.com/LaMitaOne/SkiaLemmings    
+https://github.com/LaMitaOne/SkiaStarPatrols    
+https://github.com/LaMitaOne/Skiatris    
+https://github.com/LaMitaOne/Skia-A-Cats-Life    
+
+
