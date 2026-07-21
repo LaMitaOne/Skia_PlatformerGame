@@ -28,9 +28,9 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Enemies: Encounter "Ghosts" that patrol platforms. Touch them, and it's game over! But watch out—they can fall into pits just like you.
     Physics & Juice: Smooth gravity, friction, and particle explosions. Crates explode with a satisfying burst when collected.
     Responsive Controls: Tight movement with friction and acceleration.
-    Dynamic Visual Styles/Overlays. (natural/cyberpunk, none/paper/cuphead)    
-Procedural created textures    
-
+    Dynamic Visual Styles/Overlays. (natural/cyberpunk, none/paper/cuphead) 
+    Procedural created textures    
+    
 🕹️ Controls
 
     Move Left: A or Left Arrow
