@@ -39,6 +39,7 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Reset Level: R (While paused)
     Switch Avatar: C (Cat or stickman)
     Switch visual style: V  
+    Switch overlay mode: F    
 
 🛠️ Technical Details
 
