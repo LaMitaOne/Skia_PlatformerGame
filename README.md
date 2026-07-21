@@ -13,7 +13,7 @@ DeepWiki:
 
 Sample Video: https://www.youtube.com/watch?v=mePkXrbPfJg    
     
-# Skia Platformer Game v0.5  
+# Skia Platformer Game v0.6  
 
 A feature-rich 2D platformer prototype built entirely with Skia (FMX + Skia4Delphi). What started as a 2-hour "can I do this?" challenge has evolved into a fully playable endless scroller with procedural generation, physics, audio and visual effects.    
 
@@ -28,7 +28,7 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Enemies: Encounter "Ghosts" that patrol platforms. Touch them, and it's game over! But watch out—they can fall into pits just like you.
     Physics & Juice: Smooth gravity, friction, and particle explosions. Crates explode with a satisfying burst when collected.
     Responsive Controls: Tight movement with friction and acceleration.
-    Dynamic Visual Styles.
+    Dynamic Visual Styles/Overlays. (natural/cyberpunk, none/paper/cuphead)    
 
 🕹️ Controls
 
@@ -58,7 +58,12 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Ensure you have the Skia4Delphi library installed.
     Run and play!
 
- ----Latest Changes    
+ ----Latest Changes       
+    v 0.6:     
+     - Separated Textures and Post-Processing into independent systems.    
+     - Added new paper style overlay     
+     - 'V' now switches textures (Standard Nature vs. Cyberpunk).    
+     - 'F' now switches Post-Processing Filters (None -> Paper -> Cuphead).    
    v 0.5:   
      - Visuals Overhaul, Game Feel & Dynamic Themes Update    
      - Added Procedural Texture Generation: Grass, Dirt, and Stone are now     
