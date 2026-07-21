@@ -11,7 +11,7 @@ DeepWiki:
 <img width="1606" height="591" alt="Unbenannt" src="https://github.com/user-attachments/assets/c7dd4161-659f-4ef0-ad7c-6017c9ae93e4" />
 
 
-Sample Video: https://www.youtube.com/watch?v=mePkXrbPfJg    
+Sample Video: [https://www.youtube.com/watch?v=mePkXrbPfJg](https://youtu.be/Rjs-OW2iUtM)    
     
 # Skia Platformer Game v0.6  
 
