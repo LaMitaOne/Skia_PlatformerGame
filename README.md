@@ -29,6 +29,7 @@ This isn't just a static tech demo anymore. It's a vertical slice of a platforme
     Physics & Juice: Smooth gravity, friction, and particle explosions. Crates explode with a satisfying burst when collected.
     Responsive Controls: Tight movement with friction and acceleration.
     Dynamic Visual Styles/Overlays. (natural/cyberpunk, none/paper/cuphead)    
+Procedural created textures    
 
 🕹️ Controls
 
