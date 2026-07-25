@@ -109,12 +109,13 @@ License
 MIT License - Do whatever you want with it. Credits appreciated but not required.
 
 Happy jumping! 🦘   
-
-more game prototypes:
-    
-https://github.com/LaMitaOne/SkiaLemmings    
-https://github.com/LaMitaOne/SkiaStarPatrols    
-https://github.com/LaMitaOne/Skiatris    
-https://github.com/LaMitaOne/Skia-A-Cats-Life    
-https://github.com/LaMitaOne/Skia-RTS-Game    
-
+     
+🎮 Skia4Delphi Games (each one file, no ext engine):    
+   C&C style 2.5D isometric rts https://github.com/LaMitaOne/Skia-RTS-Game   
+   Tetris clone https://github.com/LaMitaOne/Skiatris    
+   2D side-scrolling space shooter https://github.com/LaMitaOne/SkiaStarPatrols    
+   2.5D isometric cat game https://github.com/LaMitaOne/Skia-A-Cats-Life    
+   Lemmings/Worms/Portal/Touch 2D hybrid https://github.com/LaMitaOne/SkiaLemmings       
+     
+🎮 Game components FMX:    
+   MRX Gamepad Core https://github.com/LaMitaOne/MRX-Gamepad-Core    
