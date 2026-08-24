@@ -116,6 +116,7 @@ Happy jumping! 🦘
    2D Tetris clone https://github.com/LaMitaOne/Skiatris     
    2D Skia Powder (Falling Sand Simulation) https://github.com/LaMitaOne/Skia-Powder    
    2D BombRunner (Bomberman clone) https://github.com/LaMitaOne/SkiaBombRunner     
+   2D Skia Micro Racers https://github.com/LaMitaOne/SkiaMicroRacers      
    2.5D C&C style isometric rts https://github.com/LaMitaOne/Skia-RTS-Game   
    2.5D Isometric cat game https://github.com/LaMitaOne/Skia-A-Cats-Life    
    2.5D Raycasting doom base https://github.com/LaMitaOne/SkiaDoomBase    
